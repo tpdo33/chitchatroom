@@ -1,0 +1,16 @@
+1.prompt for name
+2.client ->server: new user, name
+3.server stores user name
+	server -> client(new user): (you) user joined, all previous
+	server-> client(all): user joined, name
+4. user submits a message
+	client -> server: sending message, message
+5. server stores message with name
+	server->client(all): message received, message
+6. user disconnects
+	server listens for disconnection(sent from client)
+	server removes user
+	server -> client (all): user left, user
+	server removes user
+
+

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Chatroom</title>
+
+	<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+	<script type ="text/javascript" src="/socket.io/socket.io.js"></script>
+	<style>
+		.container{
+			margin: auto;
+			padding: auto;
+		}
+
+		.chat_box {
+			height: 500px;
+			width: 500px;
+			margin-right: 300px;
+			padding: 20px;
+			border: 1px solid #800020;
+			overflow: scroll;
+		}
+	</style>
+	<script>
+		$(document).ready(function(){
+			var name = prompt("What is your name?" || "Anon");
+			console.log(name);
+
+			var socket = io.connect();
+
+			socket.emit("user_joining", {name: name});
+
+			socket.on("display_chats", function(data){
+				for(var i = 0; i < data.msgs.length; i++){
+					$(".chat_box").append(
+						"<p>" + data.msgs[i].name + " said: " +data.msgs[i].msg+" </p>" ).scrollTop($(".chat_box")[0].scrollHeight);
+				}
+			});
+
+			socket.on("user_joined", function(data){
+				$(".chat_box").append(
+					"<p>" + data.name + " joined the chatroom.</p>").
+					scrollTop($(".chat_box")[0].scrollHeight);
+				})
+
+			$("#send_chat_btn").click(function(){
+				var msg = $("#message").val();
+				if(msg === ""){
+					alert("Do it!");
+				}else{
+				socket.emit("sending_msg", {msg: msg});
+				$("#message").val("");
+				}
+			})
+
+			//enterkey is pressed
+			$(document).on("keydown", function(e){
+				if(e.keyCode === 13){
+					$("#send_chat_btn").click();
+				}
+			})
+
+			socket.on("msg_received", function(data){
+				console.log(data);
+				$(".chat_box").append(
+					"<p>" + data.name + " said: " + data.msg + "</p>").scrollTop($(".chat_box")[0].scrollHeight);;
+			})
+
+			socket.on("user_disconnected", function(data){
+				$(".chat_box").append(
+					"<p>" + data.name + " has left the room </p>").scrollTop($(".chat_box")[0].scrollHeight);;
+
+			})
+		});
+
+	</script>
+</head>
+<body>
+	<div class = "container">
+		<h1> Chatroom </h1>
+		<div class ="chat_box">
+		</div>
+		<input id ="message" type ="text"  placeholder ="enter message here">
+		<button type ="button" class ="btn btn-primary"id ="send_chat_btn">Send</button>
+	</div>
+</body>
+</html>
